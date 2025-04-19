@@ -216,7 +216,7 @@ export function JobProvider({ children }: JobProviderProps): JSX.Element {
         const SOCKET_URL = import.meta.env.VITE_WEBSOCKET_URL || 'http://localhost:3000';
         console.log('WebSocket URL:', SOCKET_URL);
         // Connect to WebSocket server
-        socketManager.connect('ws://localhost:3000');
+        socketManager.connect(SOCKET_URL);
 
         // Listen for connection state changes
         const unsubscribe = socketManager.onConnectionStateChange((connectionState) => {

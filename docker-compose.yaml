@@ -1,0 +1,162 @@
+services:
+  # MongoDB database
+  mongodb:
+    image: mongo:6.0
+    container_name: regex-validator-mongodb
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=regex_user
+      - MONGO_INITDB_ROOT_PASSWORD=regex_password
+    networks:
+      - regex-validator-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://regex_user:regex_password@localhost:27017/admin --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis
+  redis:
+    image: redis:7.0-alpine
+    container_name: regex-validator-redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - regex-validator-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: regex-validator-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - regex-validator-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo srvr | nc localhost 2181 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Kafka broker
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: regex-validator-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - regex-validator-network
+    restart: unless-stopped
+    healthcheck:
+      test: kafka-topics --bootstrap-server localhost:9092 --list || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Kafka topic initialization
+  kafka-init:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: regex-validator-kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      # Create required Kafka topics
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic regex-validation-jobs --partitions 3 --replication-factor 1
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic regex-validation-jobs-dlq --partitions 3 --replication-factor 1
+      echo 'Kafka topics created successfully'
+      "
+    networks:
+      - regex-validator-network
+
+  # backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: regex-validator-backend
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      - MONGODB_URI=mongodb://regex_user:regex_password@mongodb:27017/regex_validator?authSource=admin
+      - REDIS_URL=redis://redis:6379
+      - KAFKA_BROKERS=kafka:9092
+      - REGEX_PATTERN=^[a-zA-Z0-9]+$
+      - PROCESSING_DELAY_MS=2000
+      - MAX_JOB_ATTEMPTS=3
+      - REGEX_TIMEOUT_MS=5000
+      - CIRCUIT_BREAKER_THRESHOLD=3
+      - CIRCUIT_BREAKER_RESET_TIMEOUT=30000
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - regex-validator-network
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3100/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=/api
+        - VITE_WEBSOCKET_URL=/
+    container_name: regex-validator-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "61234:80" 
+    environment:
+      - NGINX_BACKEND_URL=http://backend:3000
+    restart: unless-stopped
+    networks:
+      - regex-validator-network
+
+# Docker volumes for persistent data
+volumes:
+  mongodb_data:
+  redis_data:
+
+# Docker networks
+networks:
+  regex-validator-network:
+    driver: bridge

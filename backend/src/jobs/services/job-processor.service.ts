@@ -112,7 +112,7 @@ export class JobProcessorService {
 
     /**
      * Safely run regex matching in a separate worker thread with timeout
-     * This protects against catastrophic backtracking
+     * This should protect against catastrophic backtracking
      */
     private async safeRegexMatch(
         pattern: string,

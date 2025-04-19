@@ -7,6 +7,7 @@ import { JobsModule } from './jobs/jobs.module';
 import { KafkaModule } from './kafka/kafka.module';
 import { RedisModule } from './redis/redis.module';
 import { ConfigService } from '@nestjs/config';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ConfigService } from '@nestjs/config';
         useUnifiedTopology: true,
       }),
     }),
+    HealthModule,
     CommonModule,
     JobsModule,
     KafkaModule,
