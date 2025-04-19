@@ -22,6 +22,8 @@ export class RetryService {
         ];
 
         return retryableMessages.some(msg => error.message.includes(msg));
+
+        // NB: It would be better to define custom error types instead of hard coding the messages
     }
 
     async withRetry<T>(

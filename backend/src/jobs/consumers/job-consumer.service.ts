@@ -1,4 +1,3 @@
-// src/jobs/consumers/job-consumer.service.ts
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Consumer, Kafka, KafkaMessage } from 'kafkajs';

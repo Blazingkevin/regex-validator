@@ -1,4 +1,3 @@
-// src/jobs/gateways/job-update.gateway.ts
 import {
     WebSocketGateway,
     WebSocketServer,

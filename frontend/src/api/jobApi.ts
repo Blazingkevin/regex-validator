@@ -1,9 +1,6 @@
-// src/api/jobApi.ts
 import axios, { AxiosInstance } from 'axios';
 import { Job, CreateJobRequest } from '../types/job';
 
-// Get API base URL from environment variable with fallback
-// Note: Vite uses import.meta.env instead of process.env
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // Create axios instance with common configuration
@@ -18,7 +15,6 @@ const apiClient: AxiosInstance = axios.create({
 // Add request interceptor for error handling
 apiClient.interceptors.request.use(
   (config) => {
-    // You could add auth tokens here if needed
     return config;
   },
   (error) => {

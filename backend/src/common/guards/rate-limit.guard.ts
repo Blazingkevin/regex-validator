@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class RateLimitGuard implements CanActivate {
     private readonly logger = new Logger(RateLimitGuard.name);
-    private requestMap = new Map<string, number[]>();
+    private requestMap = new Map<string, number[]>(); // In production setting -> should be redis
     private readonly requestLimit = 10;
     private readonly timeWindow = 60000;
 

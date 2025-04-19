@@ -18,7 +18,7 @@ interface BreakerInfo {
 @Injectable()
 export class CircuitBreakerService {
     private readonly logger = new Logger(CircuitBreakerService.name);
-    private breakers = new Map<string, BreakerInfo>();
+    private breakers = new Map<string, BreakerInfo>(); // in production setting, it should be kept in redis
     private defaultOptions: CircuitBreakerOptions;
 
     constructor(private configService: ConfigService) {
