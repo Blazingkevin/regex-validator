@@ -152,6 +152,12 @@ The entire application can be started with a single command:
 docker compose up --build
 ```
 
+Once started, you can access the application at:
+
+```
+http://localhost:61234
+```
+
 I've also included a Makefile for convenience with several utility commands, though this is optional as the single command above is sufficient to start the entire system.
 
 Use the included Makefile for common operations:
