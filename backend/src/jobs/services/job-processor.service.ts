@@ -65,7 +65,7 @@ export class JobProcessorService {
                 status: JobStatus.VALIDATING,
             });
 
-            // Artificial delay as specified in requirements
+            // ARTIFICIAL DELAY
             const delay = this.configService.get<number>('PROCESSING_DELAY_MS');
             await new Promise(resolve => setTimeout(resolve, delay));
 

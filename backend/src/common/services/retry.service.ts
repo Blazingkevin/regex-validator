@@ -13,6 +13,8 @@ export class RetryService {
     // Simple network errors should be retryable
     private defaultIsRetryable(error: Error): boolean {
         // sample retryable messages
+        // this was picked from the common error thrown by database and some third-party nodejs services
+        // particular to solve issues that are common during application startup phase where a service might not be ready
         const retryableMessages = [
             'ECONNREFUSED', 'ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND',
             'Connection refused', 'timeout', 'Timeout',
