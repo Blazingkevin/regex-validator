@@ -99,13 +99,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      args:
-        MONGODB_URI: ${MONGODB_URI}
-        REDIS_URL: ${REDIS_URL}
-        KAFKA_BROKERS: ${KAFKA_BROKERS}
-        REGEX_PATTERN: ${REGEX_PATTERN}
-        PROCESSING_DELAY_MS: ${PROCESSING_DELAY_MS}
-        MAX_JOB_ATTEMPTS: ${MAX_JOB_ATTEMPTS}
     container_name: regex-validator-backend
     depends_on:
       mongodb:
