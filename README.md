@@ -66,6 +66,36 @@ Since traditional ACID transactions aren't available across distributed services
 ### Stale Job Recovery
 On system restart, the worker detects and recovers jobs that were interrupted during processing.
 
+## Configuration
+
+All system behavior can be configured through environment variables in the `docker-compose.yml` file:
+
+```yaml
+environment:
+  - MONGODB_URI=mongodb://regex_user:regex_password@mongodb:27017/regex_validator?authSource=admin
+  - REDIS_URL=redis://redis:6379
+  - KAFKA_BROKERS=kafka:9092
+  - REGEX_PATTERN=^[a-zA-Z0-9]+$
+  - PROCESSING_DELAY_MS=2000
+  - MAX_JOB_ATTEMPTS=3
+  - REGEX_TIMEOUT_MS=5000
+  - CIRCUIT_BREAKER_THRESHOLD=3
+  - CIRCUIT_BREAKER_RESET_TIMEOUT=30000
+  - NODE_ENV=production
+  - PORT=3000
+```
+
+Key configurable parameters include:
+
+- **REGEX_PATTERN**: The regular expression used for validation (default: `^[a-zA-Z0-9]+$`)
+- **PROCESSING_DELAY_MS**: Artificial delay before processing in milliseconds (default: 2000)
+- **MAX_JOB_ATTEMPTS**: Maximum retry attempts for failed jobs (default: 3)
+- **REGEX_TIMEOUT_MS**: Timeout for regex evaluation to prevent infinite loops (default: 5000)
+- **CIRCUIT_BREAKER_THRESHOLD**: Number of failures before circuit breaker opens (default: 3)
+- **CIRCUIT_BREAKER_RESET_TIMEOUT**: Time in ms before circuit breaker resets (default: 30000)
+
+These can be modified directly in the docker-compose.yml file before starting the application.
+
 ## Statelessness Considerations
 
 While the backend aims to be stateless, there are some stateful aspects that could be improved:

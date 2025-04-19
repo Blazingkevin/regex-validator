@@ -103,7 +103,6 @@ class SocketManager {
             this.listeners.set(event, new Set());
         }
         
-        // Always ensure the socket.io listener is registered when the socket exists
         if (this.socket) {
             // Remove any existing listener to avoid duplicates
             this.socket.off(event);
