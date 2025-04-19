@@ -68,23 +68,22 @@ On system restart, the worker detects and recovers jobs that were interrupted du
 
 ## Configuration
 
-### Environment Variables Setup
+All system behavior can be configured through environment variables in the `docker-compose.yml` file:
 
-**Important**: Due to issues with regex pattern parsing in Docker Compose on Windows, you must create a `.env` file in the backend directory based on the provided `.env.example` file:
-
-1. Copy the `.env.example` file to a new file named `.env` in the backend directory
-2. The `.env.example` file contains the following configuration:
-   ```
-   REGEX_PATTERN="^[a-zA-Z0-9_]+$"
-   PROCESSING_DELAY_MS=5000
-   MONGODB_URI="mongodb://admin:adminpassword@localhost:27017"
-   KAFKA_BROKERS="localhost:9092"
-   REDIS_URL="redis://localhost:6379"
-   MAX_JOB_ATTEMPTS=3
-   ```
-3. Modify the values in your `.env` file as needed
-
-The Docker Compose file will use these environment variables instead of the hardcoded values.
+```yaml
+environment:
+  - MONGODB_URI=mongodb://regex_user:regex_password@mongodb:27017/regex_validator?authSource=admin
+  - REDIS_URL=redis://redis:6379
+  - KAFKA_BROKERS=kafka:9092
+  - REGEX_PATTERN=^[a-zA-Z0-9]+$
+  - PROCESSING_DELAY_MS=2000
+  - MAX_JOB_ATTEMPTS=3
+  - REGEX_TIMEOUT_MS=5000
+  - CIRCUIT_BREAKER_THRESHOLD=3
+  - CIRCUIT_BREAKER_RESET_TIMEOUT=30000
+  - NODE_ENV=production
+  - PORT=3000
+```
 
 Key configurable parameters include:
 
